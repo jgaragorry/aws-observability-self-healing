@@ -1,0 +1,20 @@
+# Terraform temporales
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+
+# Variables sensibles (si llegas a usarlas)
+*.tfvars
+*.tfvars.json
+
+# Paquetes de Lambda generados
+terraform/modules/compute/remediation.zip
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS
+.DS_Store
