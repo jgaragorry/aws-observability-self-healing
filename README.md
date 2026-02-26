@@ -75,17 +75,6 @@ Para desplegar, probar y limpiar este laboratorio sin errores:
 ¿Te interesa el SRE y la Automatización? ¡Conectemos!
 
 * **Nombre:** Jose Garagorry
-* **LinkedIn:** [linkedin.com/in/tu-perfil](https://linkedin.com/in/tu-perfil)
-* **Portfolio:** [SoftrainCorp / GitHub](https://github.com/tu-usuario)
-* **Ubicación:** Santiago, Chile 🇨🇱
-
----
-
-## 🤝 Contacto & Colaboración
-
-¿Te interesa el SRE y la Automatización? ¡Conectemos!
-
-* **Nombre:** Jose Garagorry
 * **LinkedIn:** [linkedin.com/in/jgaragorry](https://linkedin.com/in/jgaragorry)
 * **Portfolio:** [Jose Garagorry/ GitHub](https://github.com/jgaragorry)
 * **Ubicación:** Santiago, Chile 🇨🇱
