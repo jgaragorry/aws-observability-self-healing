@@ -1,15 +1,20 @@
+# =============================================================================
+# CONFIGURACIÓN GLOBAL DE TERRAFORM
+# =============================================================================
 terraform {
   required_version = ">= 1.5.0"
 
-  # El backend se configura después de correr el bootstrap script
+  # Backend: Define dónde se almacena el estado de la infraestructura (.tfstate)
+  # Se utiliza S3 para persistencia y DynamoDB para evitar ejecuciones simultáneas (Locking)
   backend "s3" {
-    bucket         = "jgaragorry-sre-tfstate-533267117128" # <--- Este es nuestro placeholder
+    bucket         = "jgaragorry-sre-tfstate-533267117128" 
     key            = "self-healing/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "terraform-lock-table"
     encrypt        = true
   }
 
+  # Proveedores: Define las librerías externas necesarias (en este caso, AWS)
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -18,38 +23,48 @@ terraform {
   }
 }
 
+# =============================================================================
+# CONFIGURACIÓN DEL PROVEEDOR AWS
+# =============================================================================
 provider "aws" {
   region = var.aws_region
 
-  # FinOps: Etiquetado Automático Global
+  # FinOps & Gobierno: Aplicación automática de etiquetas a todos los recursos
+  # Esto asegura que cada recurso creado herede los metadatos de 'default_tags'
   default_tags {
-    tags = {
-      Project     = "Self-Healing-Lab"
-      Owner       = "JoseGaragorry"
-      Environment = "Workshop"
-      CostCenter  = "Learning-SRE"
-      ManagedBy   = "Terraform"
-    }
+    tags = var.default_tags
   }
 }
 
-# Capa 1: Seguridad e Identidad
+# =============================================================================
+# CAPA 1: SEGURIDAD E IDENTIDAD (IAM)
+# =============================================================================
+# Este módulo gestiona los roles y políticas de ejecución.
+# Provee los permisos necesarios para que Lambda pueda interactuar con otros servicios.
 module "security" {
   source       = "./modules/security"
   project_name = var.project_name
 }
 
-# Capa 2: Cómputo (Lambda de Remediación)
+# =============================================================================
+# CAPA 2: CÓMPUTO (REMEDIACIÓN)
+# =============================================================================
+# Este módulo contiene la lógica principal (Lambda) que se activará
+# ante fallos de salud en la infraestructura.
 module "compute" {
   source          = "./modules/compute"
   project_name    = var.project_name
   lambda_role_arn = module.security.lambda_role_arn
 }
 
-# Capa 3: Observabilidad y Disparadores
+# =============================================================================
+# CAPA 3: OBSERVABILIDAD Y DISPARADORES (EVENTBRIDGE)
+# =============================================================================
+# Este módulo configura el monitoreo y las reglas de EventBridge.
+# Actúa como el 'cerebro' que detecta eventos y dispara la Lambda de remediación.
 module "observability" {
   source               = "./modules/observability"
   project_name         = var.project_name
   lambda_function_arn  = module.compute.lambda_function_arn
-  lambda_function_name = "${var.project_name}-remediation" # Consistencia con el módulo compute
+  lambda_function_name = "${var.project_name}-remediation"
 }
